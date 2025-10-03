@@ -5,6 +5,26 @@
 
 #define MAX 256  // Maximum size for the input expression
 
+// Function Declarations 
+int getPriority(char op);
+int calculate(int a, int b, char op, int *error);
+int solve(char *exp, int *error);
+
+int main()
+{
+    char exp[MAX];
+    printf("Enter a math expression (e.g. 12+3*4): ");
+    gets(exp); 
+
+    int flag = 0;
+    int result = solve(exp, &flag);
+
+    if (!flag)
+        printf("Answer = %d\n", result);
+
+    return 0;
+}
+
 // Function to get operator priority
 int getPriority(char op) {
     if (op == '+' || op == '-') return 1;  // Low priority
@@ -29,7 +49,7 @@ int calculate(int a, int b, char op, int *error) {
     return 0;
 }
 
-// Function to evaluate the mathematical expression  ---> using 2 stacks.
+// Function to evaluate the mathematical expression using 2 stacks
 int solve(char *exp, int *error) {
     int numbers[MAX];     // Stack to store numbers
     char operators[MAX];  // Stack to store operators
@@ -76,19 +96,4 @@ int solve(char *exp, int *error) {
     }
 
     return numbers[numTop]; 
-}
-
-int main()
-{
-    char exp[MAX];
-    printf("Enter a math expression (e.g. 12+3*4): ");
-    gets(exp);
-
-    int flag = 0;
-    int result = solve(exp, &flag);
-
-    if (!flag)
-        printf("Answer = %d\n", result);
-
-    return 0;
 }
