@@ -3,21 +3,21 @@
 #include <ctype.h>
 #include <string.h>
 
-#define MAX 256  // Maximum size for the input expression
+#define MAX 256  
 
 // Function Declarations 
-int getPriority(char op);
-int calculate(int a, int b, char op, int *error);
-int solve(char *exp, int *error);
+int getOperatorPriority(char operator);
+int performOperation(int operand1, int operand2, char operator, int *flag);
+int evaluateExpression(char *expression, int *flag);
 
 int main()
 {
-    char exp[MAX];
+    char expression[MAX];
     printf("Enter a math expression (e.g. 12+3*4): ");
-    gets(exp); 
+    gets(expression);  
 
     int flag = 0;
-    int result = solve(exp, &flag);
+    int result = evaluateExpression(expression, &flag);
 
     if (!flag)
         printf("Answer = %d\n", result);
@@ -26,74 +26,74 @@ int main()
 }
 
 // Function to get operator priority
-int getPriority(char op) {
-    if (op == '+' || op == '-') return 1;  // Low priority
-    if (op == '*' || op == '/') return 2;  // High priority
+int getOperatorPriority(char operator) {
+    if (operator == '+' || operator == '-') return 1;  // Low priority
+    if (operator == '*' || operator == '/') return 2;  // High priority
     return 0;  // Not an operator
 }
 
 // Function to perform calculation based on operator
-int calculate(int a, int b, char op, int *error) {
-    switch (op) {
-        case '+': return a + b;
-        case '-': return a - b;
-        case '*': return a * b;
+int performOperation(int operand1, int operand2, char operator, int *flag) {
+    switch (operator) {
+        case '+': return operand1 + operand2;
+        case '-': return operand1 - operand2;
+        case '*': return operand1 * operand2;
         case '/':
-            if (b == 0) {
+            if (operand2 == 0) {
                 printf("Error: Division by zero!\n");
-                *error = 1;
+                *flag = 1;
                 return 0;
             }
-            return a / b;
+            return operand1 / operand2;
     }
     return 0;
 }
 
-// Function to evaluate the mathematical expression using 2 stacks
-int solve(char *exp, int *error) {
-    int numbers[MAX];     // Stack to store numbers
-    char operators[MAX];  // Stack to store operators
-    int numTop = -1, opTop = -1;
+// Function to evaluate 
+int evaluateExpression(char *expression, int *flag) {
+    int numberStack[MAX];     
+    char operatorStack[MAX];  
+    int numberTop = -1, operatorTop = -1;
 
-    for (int i = 0; exp[i] != '\0'; i++) {
-        if (isspace(exp[i])) continue;  // Skip spaces
+    for (int i = 0; expression[i] != '\0'; i++) {
+        if (isspace(expression[i])) continue;  // Skip spaces
 
-        // If current character is a number  ---> read the full number.
-        if (isdigit(exp[i])) {
-            int num = 0;
-            while (isdigit(exp[i])) {
-                num = num * 10 + (exp[i] - '0');
+        // If current character is a number, read the full number
+        if (isdigit(expression[i])) {
+            int currentNumber = 0;
+            while (isdigit(expression[i])) {
+                currentNumber = currentNumber * 10 + (expression[i] - '0');
                 i++;
             }
             i--;  
-            numbers[++numTop] = num;  // Push number to stack
+            numberStack[++numberTop] = currentNumber;  // Push number to stack
         }
         // If current character is an operator
-        else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/') {
-            while (opTop >= 0 && getPriority(operators[opTop]) >= getPriority(exp[i])) {
-                int b = numbers[numTop--];
-                int a = numbers[numTop--];
-                char op = operators[opTop--];
-                numbers[++numTop] = calculate(a, b, op, error);
-                if (*error) return 0;  // Stop if error occurs
+        else if (expression[i] == '+' || expression[i] == '-' || expression[i] == '*' || expression[i] == '/') {
+            while (operatorTop >= 0 && getOperatorPriority(operatorStack[operatorTop]) >= getOperatorPriority(expression[i])) {
+                int operand2 = numberStack[numberTop--];
+                int operand1 = numberStack[numberTop--];
+                char operator = operatorStack[operatorTop--];
+                numberStack[++numberTop] = performOperation(operand1, operand2, operator, flag);
+                if (*flag) return 0;
             }
-            operators[++opTop] = exp[i];  // Push current operator
+            operatorStack[++operatorTop] = expression[i];  // Push current operator
         }
         else {
-            printf("Error: Invalid character '%c' in expression!\n", exp[i]);
-            *error = 1;
+            printf("Error: Invalid character '%c' in expression!\n", expression[i]);
+            *flag = 1;
             return 0;
         }
     }
 
     // Perform remaining operations
-    while (opTop >= 0) {
-        int b = numbers[numTop--];
-        int a = numbers[numTop--];
-        char op = operators[opTop--];
-        numbers[++numTop] = calculate(a, b, op, error);
-        if (*error) return 0;
+    while (operatorTop >= 0) {
+        int operand2 = numberStack[numberTop--];
+        int operand1 = numberStack[numberTop--];
+        char operator = operatorStack[operatorTop--];
+        numberStack[++numberTop] = performOperation(operand1, operand2, operator, flag);
+        if (*flag) return 0;
     }
 
-    return numbers[numTop]; 
+    return numberStack[numberTop]; 
 }
