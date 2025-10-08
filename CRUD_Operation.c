@@ -46,7 +46,6 @@ int main() {
     return 0;
 }
 
-// Ensure the file exists
 void check() {
     FILE *file = fopen(FILENAME, "a");
     if (file == NULL) {
@@ -59,15 +58,15 @@ void check() {
 // Create: Add a new user
 void createUser() {
     FILE *file = fopen(FILENAME, "r");
-    User u;
+    User user;
     int newId, exists = 0;
 
     printf("Enter User ID: ");
     scanf("%d", &newId);
 
     // Check if ID already exists
-    while (fscanf(file, "%d %s %d", &u.id, u.name, &u.age) == 3) {
-        if (u.id == newId) {
+    while (fscanf(file, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+        if (user.id == newId) {
             exists = 1;
             break;
         }
@@ -81,28 +80,27 @@ void createUser() {
 
     // Add new user
     file = fopen(FILENAME, "a");
-    u.id = newId;
+    user.id = newId;
     printf("Enter Name: ");
-    scanf("%s", u.name);
+    scanf("%s", user.name);
     printf("Enter Age: ");
-    scanf("%d", &u.age);
+    scanf("%d", &user.age);
 
-    fprintf(file, "%d %s %d\n", u.id, u.name, u.age);
+    fprintf(file, "%d %s %d\n", user.id, user.name, user.age);
     fclose(file);
 
     printf("User added successfully.\n");
 }
 
-
 // Read: Display all users
 void readUsers() {
     FILE *file = fopen(FILENAME, "r");
-    User u;
+    User user;
     int found = 0;
 
     printf("\n--- List of Users ---\n");
-    while (fscanf(file, "%d %s %d", &u.id, u.name, &u.age) == 3) {
-        printf("ID: %d, Name: %s, Age: %d\n", u.id, u.name, u.age);
+    while (fscanf(file, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+        printf("ID: %d, Name: %s, Age: %d\n", user.id, user.name, user.age);
         found = 1;
     }
     fclose(file);
@@ -116,21 +114,21 @@ void readUsers() {
 void updateUser() {
     FILE *file = fopen(FILENAME, "r");
     FILE *tempFile = fopen("temp.txt", "w");
-    User u;
+    User user;
     int userId, found = 0;
 
     printf("Enter ID of user to update: ");
     scanf("%d", &userId);
 
-    while (fscanf(file, "%d %s %d", &u.id, u.name, &u.age) == 3) {
-        if (u.id == userId) {
+    while (fscanf(file, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+        if (user.id == userId) {
             found = 1;
             printf("Enter new Name: ");
-            scanf("%s", u.name);
+            scanf("%s", user.name);
             printf("Enter new Age: ");
-            scanf("%d", &u.age);
+            scanf("%d", &user.age);
         }
-        fprintf(tempFile, "%d %s %d\n", u.id, u.name, u.age);
+        fprintf(tempFile, "%d %s %d\n", user.id, user.name, user.age);
     }
 
     fclose(file);
@@ -149,18 +147,18 @@ void updateUser() {
 void deleteUser() {
     FILE *file = fopen(FILENAME, "r");
     FILE *tempFile = fopen("temp.txt", "w");
-    User u;
+    User user;
     int userId, found = 0;
 
     printf("Enter ID of user to delete: ");
     scanf("%d", &userId);
 
-    while (fscanf(file, "%d %s %d", &u.id, u.name, &u.age) == 3) {
-        if (u.id == userId) {
+    while (fscanf(file, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+        if (user.id == userId) {
             found = 1;
-            continue; // skip this record
+            continue; 
         }
-        fprintf(tempFile, "%d %s %d\n", u.id, u.name, u.age);
+        fprintf(tempFile, "%d %s %d\n", user.id, user.name, user.age);
     }
 
     fclose(file);
