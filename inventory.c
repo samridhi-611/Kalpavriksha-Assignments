@@ -19,20 +19,35 @@ void addProduct(Product **inventory, int *count) {
     }
 
     Product *newProduct = &(*inventory)[*count];
-    printf("Enter details of the new product:\n");
-    printf("Product ID: ");
-    scanf("%d", &newProduct->id);
+    printf("Enter Product ID (1–10000): ");
+    if (scanf("%d", &newProduct->id) != 1 || newProduct->id < 1 || newProduct->id > 10000) {
+        printf("Invalid Product ID. Please enter a number between 1 and 10000.\n");
+        while (getchar() != '\n');
+        return;
+    }
     getchar();
 
-    printf("Product Name: ");
+    printf("Enter Product Name: ");
     fgets(newProduct->name, NAME_LEN, stdin);
     newProduct->name[strcspn(newProduct->name, "\n")] = '\0';
+    if (strlen(newProduct->name) == 0) {
+        printf("Product name cannot be empty.\n");
+        return;
+    }
 
-    printf("Product Price: ");
-    scanf("%f", &newProduct->price);
+    printf("Enter Product Price: ");
+    if (scanf("%f", &newProduct->price) != 1 || newProduct->price <= 0) {
+        printf("Invalid price entered.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
-    printf("Product Quantity: ");
-    scanf("%d", &newProduct->quantity);
+    printf("Enter Product Quantity: ");
+    if (scanf("%d", &newProduct->quantity) != 1 || newProduct->quantity < 0) {
+        printf("Invalid quantity entered.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
     (*count)++;
     printf("Product added successfully!\n");
@@ -44,26 +59,36 @@ void viewProducts(Product *inventory, int count) {
         return;
     }
 
-    printf("========= PRODUCT LIST =========\n");
-    for (int productIndex = 0; productIndex < count; productIndex++) {
-        printf("Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n",
-               inventory[productIndex].id,
-               inventory[productIndex].name,
-               inventory[productIndex].price,
-               inventory[productIndex].quantity);
+    printf("\n| ID | Name | Quantity | Price |\n");
+    printf("----------------------------------\n");
+    for (int i = 0; i < count; i++) {
+        printf("| %d | %s | %d | %.2f |\n",
+               inventory[i].id,
+               inventory[i].name,
+               inventory[i].quantity,
+               inventory[i].price);
     }
+    printf("----------------------------------\n");
 }
 
 void updateQuantity(Product *inventory, int count) {
     int targetId, updatedQuantity;
     printf("Enter Product ID to update quantity: ");
-    scanf("%d", &targetId);
+    if (scanf("%d", &targetId) != 1) {
+        printf("Invalid Product ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
-    for (int productIndex = 0; productIndex < count; productIndex++) {
-        if (inventory[productIndex].id == targetId) {
+    for (int i = 0; i < count; i++) {
+        if (inventory[i].id == targetId) {
             printf("Enter new Quantity: ");
-            scanf("%d", &updatedQuantity);
-            inventory[productIndex].quantity = updatedQuantity;
+            if (scanf("%d", &updatedQuantity) != 1 || updatedQuantity < 0) {
+                printf("Invalid quantity entered.\n");
+                while (getchar() != '\n');
+                return;
+            }
+            inventory[i].quantity = updatedQuantity;
             printf("Quantity updated successfully!\n");
             return;
         }
@@ -74,15 +99,22 @@ void updateQuantity(Product *inventory, int count) {
 void searchByID(Product *inventory, int count) {
     int targetId;
     printf("Enter Product ID to search: ");
-    scanf("%d", &targetId);
+    if (scanf("%d", &targetId) != 1) {
+        printf("Invalid Product ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
-    for (int productIndex = 0; productIndex < count; productIndex++) {
-        if (inventory[productIndex].id == targetId) {
-            printf("Product Found: Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n",
-                   inventory[productIndex].id,
-                   inventory[productIndex].name,
-                   inventory[productIndex].price,
-                   inventory[productIndex].quantity);
+    for (int i = 0; i < count; i++) {
+        if (inventory[i].id == targetId) {
+            printf("\n| ID | Name | Quantity | Price |\n");
+            printf("----------------------------------\n");
+            printf("| %d | %s | %d | %.2f |\n",
+                   inventory[i].id,
+                   inventory[i].name,
+                   inventory[i].quantity,
+                   inventory[i].price);
+            printf("----------------------------------\n");
             return;
         }
     }
@@ -91,19 +123,20 @@ void searchByID(Product *inventory, int count) {
 
 void searchByName(Product *inventory, int count) {
     char searchTerm[NAME_LEN];
+    getchar();
     printf("Enter name to search (partial allowed): ");
     fgets(searchTerm, NAME_LEN, stdin);
     searchTerm[strcspn(searchTerm, "\n")] = '\0';
 
     int found = 0;
-    printf("Products Found:\n");
-    for (int productIndex = 0; productIndex < count; productIndex++) {
-        if (strstr(inventory[productIndex].name, searchTerm) != NULL) {
-            printf("Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n",
-                   inventory[productIndex].id,
-                   inventory[productIndex].name,
-                   inventory[productIndex].price,
-                   inventory[productIndex].quantity);
+    printf("\nProducts Found:\n");
+    for (int i = 0; i < count; i++) {
+        if (strstr(inventory[i].name, searchTerm) != NULL) {
+            printf("| %d | %s | %d | %.2f |\n",
+                   inventory[i].id,
+                   inventory[i].name,
+                   inventory[i].quantity,
+                   inventory[i].price);
             found = 1;
         }
     }
@@ -114,19 +147,28 @@ void searchByName(Product *inventory, int count) {
 void searchByPriceRange(Product *inventory, int count) {
     float minPrice, maxPrice;
     printf("Enter minimum price: ");
-    scanf("%f", &minPrice);
+    if (scanf("%f", &minPrice) != 1) {
+        printf("Invalid minimum price.\n");
+        while (getchar() != '\n');
+        return;
+    }
+
     printf("Enter maximum price: ");
-    scanf("%f", &maxPrice);
+    if (scanf("%f", &maxPrice) != 1 || maxPrice < minPrice) {
+        printf("Invalid maximum price.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
     int found = 0;
-    printf("Products in price range:\n");
-    for (int productIndex = 0; productIndex < count; productIndex++) {
-        if (inventory[productIndex].price >= minPrice && inventory[productIndex].price <= maxPrice) {
-            printf("Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n",
-                   inventory[productIndex].id,
-                   inventory[productIndex].name,
-                   inventory[productIndex].price,
-                   inventory[productIndex].quantity);
+    printf("\nProducts in price range:\n");
+    for (int i = 0; i < count; i++) {
+        if (inventory[i].price >= minPrice && inventory[i].price <= maxPrice) {
+            printf("| %d | %s | %d | %.2f |\n",
+                   inventory[i].id,
+                   inventory[i].name,
+                   inventory[i].quantity,
+                   inventory[i].price);
             found = 1;
         }
     }
@@ -142,12 +184,16 @@ void deleteProduct(Product **inventory, int *count) {
 
     int targetId;
     printf("Enter Product ID to delete: ");
-    scanf("%d", &targetId);
+    if (scanf("%d", &targetId) != 1) {
+        printf("Invalid Product ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
     int targetIndex = -1;
-    for (int productIndex = 0; productIndex < *count; productIndex++) {
-        if ((*inventory)[productIndex].id == targetId) {
-            targetIndex = productIndex;
+    for (int i = 0; i < *count; i++) {
+        if ((*inventory)[i].id == targetId) {
+            targetIndex = i;
             break;
         }
     }
@@ -157,8 +203,8 @@ void deleteProduct(Product **inventory, int *count) {
         return;
     }
 
-    for (int moveIndex = targetIndex; moveIndex < *count - 1; moveIndex++) {
-        (*inventory)[moveIndex] = (*inventory)[moveIndex + 1];
+    for (int i = targetIndex; i < *count - 1; i++) {
+        (*inventory)[i] = (*inventory)[i + 1];
     }
 
     *inventory = (Product *)realloc(*inventory, (*count - 1) * sizeof(Product));
@@ -172,7 +218,10 @@ int main() {
     Product *inventory = NULL;
 
     printf("Enter initial number of products: ");
-    scanf("%d", &totalProducts);
+    if (scanf("%d", &totalProducts) != 1 || totalProducts < 0) {
+        printf("Invalid number of products.\n");
+        return 1;
+    }
     getchar();
 
     inventory = (Product *)calloc(totalProducts, sizeof(Product));
@@ -181,21 +230,41 @@ int main() {
         return 1;
     }
 
-    for (int productIndex = 0; productIndex < totalProducts; productIndex++) {
-        printf("\nEnter details for product %d:\n", productIndex + 1);
-        printf("Product ID: ");
-        scanf("%d", &inventory[productIndex].id);
+    for (int i = 0; i < totalProducts; i++) {
+        printf("\nEnter details for product %d:\n", i + 1);
+        printf("Product ID (1–10000): ");
+        if (scanf("%d", &inventory[i].id) != 1 || inventory[i].id < 1 || inventory[i].id > 10000) {
+            printf("Invalid Product ID.\n");
+            while (getchar() != '\n');
+            i--;
+            continue;
+        }
         getchar();
 
         printf("Product Name: ");
-        fgets(inventory[productIndex].name, NAME_LEN, stdin);
-        inventory[productIndex].name[strcspn(inventory[productIndex].name, "\n")] = '\0';
+        fgets(inventory[i].name, NAME_LEN, stdin);
+        inventory[i].name[strcspn(inventory[i].name, "\n")] = '\0';
+        if (strlen(inventory[i].name) == 0) {
+            printf("Product name cannot be empty.\n");
+            i--;
+            continue;
+        }
 
         printf("Product Price: ");
-        scanf("%f", &inventory[productIndex].price);
+        if (scanf("%f", &inventory[i].price) != 1 || inventory[i].price <= 0) {
+            printf("Invalid price.\n");
+            while (getchar() != '\n');
+            i--;
+            continue;
+        }
 
         printf("Product Quantity: ");
-        scanf("%d", &inventory[productIndex].quantity);
+        if (scanf("%d", &inventory[i].quantity) != 1 || inventory[i].quantity < 0) {
+            printf("Invalid quantity.\n");
+            while (getchar() != '\n');
+            i--;
+            continue;
+        }
     }
 
     int choice;
@@ -246,4 +315,3 @@ int main() {
     free(inventory);
     return 0;
 }
-
