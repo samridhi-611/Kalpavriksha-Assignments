@@ -246,3 +246,4 @@ int main() {
     free(inventory);
     return 0;
 }
+
