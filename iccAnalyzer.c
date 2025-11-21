@@ -11,7 +11,7 @@ typedef struct PlayerNode
 {
     int playerId;
     char playerName[MAX_NAME];
-    int playerRole; // 1 = Batsman, 2 = Bowler, 3 = All-rounder
+    int playerRole;
     int totalRuns;
     float battingAverage;
     float strikeRate;
@@ -37,12 +37,12 @@ typedef struct
 
 Team teamArray[MAX_TEAMS];
 int totalTeams = 0;
+
 void clearInputBuffer()
 {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
-
 
 PlayerNode *createPlayerNode(
     int playerId,
@@ -55,6 +55,11 @@ PlayerNode *createPlayerNode(
     float economyRate)
 {
     PlayerNode *newPlayer = (PlayerNode *)malloc(sizeof(PlayerNode));
+    if (newPlayer == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed for PlayerNode\n");
+        exit(1);
+    }
 
     newPlayer->playerId = playerId;
     strncpy(newPlayer->playerName, playerName, MAX_NAME);
@@ -86,6 +91,7 @@ PlayerNode *createPlayerNode(
     return newPlayer;
 }
 
+
 void insertPlayerSorted(PlayerNode **listHead, PlayerNode *newPlayer)
 {
     if (*listHead == NULL ||
@@ -106,6 +112,7 @@ void insertPlayerSorted(PlayerNode **listHead, PlayerNode *newPlayer)
     newPlayer->next = currentNode->next;
     currentNode->next = newPlayer;
 }
+
 
 void swapTeams(Team *first, Team *second)
 {
@@ -162,6 +169,7 @@ void initializeTeams()
         teamArray[teamIndex].averageStrikeRate = 0.0f;
         teamArray[teamIndex].totalPlayerCount = 0;
     }
+
     quickSort(teamArray, 0, totalTeams - 1);
 }
 
@@ -205,18 +213,14 @@ int getRoleCode(const char *roleString)
 void addPlayerToTeam(int teamIndex, PlayerNode *playerNode)
 {
     Team *teamPtr = &teamArray[teamIndex];
+
     if (playerNode->playerRole == 1)
-    {
         insertPlayerSorted(&teamPtr->batsmanHead, playerNode);
-    }
     else if (playerNode->playerRole == 2)
-    {
         insertPlayerSorted(&teamPtr->bowlerHead, playerNode);
-    }
     else
-    {
         insertPlayerSorted(&teamPtr->allRounderHead, playerNode);
-    }
+
     if (playerNode->playerRole == 1 || playerNode->playerRole == 3)
     {
         teamPtr->strikeRateSum += playerNode->strikeRate;
@@ -291,13 +295,12 @@ void showTeamDetails()
 
     printf("Enter Team Name: ");
     fgets(inputTeamName, MAX_NAME, stdin);
-    inputTeamName[strcspn(inputTeamName, "\r\n")] = 0; 
-
+    inputTeamName[strcspn(inputTeamName, "\r\n")] = 0;
 
     int teamIndex = findTeamIndex(inputTeamName);
     if (teamIndex == -1)
     {
-        printf("Team not found! (Note: Search is case-sensitive, e.g., 'Sri Lanka')\n");
+        printf("Team not found! (Case-sensitive)\n");
         return;
     }
 
@@ -316,7 +319,7 @@ void showTeamDetails()
 
     printf("\n--- Team Stats ---\n");
     printf("Total Players: %d\n", teamPtr->totalPlayerCount);
-    printf("Average Strike Rate (Batters + All-rounders): %.2f\n",
+    printf("Average Strike Rate: %.2f\n",
            teamPtr->averageStrikeRate);
 }
 
@@ -370,6 +373,7 @@ void showTeamRankings()
                teamArray[teamIndex].totalPlayerCount);
     }
 }
+
 
 typedef struct
 {
@@ -462,8 +466,8 @@ void showPlayersByRoleAcrossTeams()
 
     printf("Enter Role (1=Batsman, 2=Bowler, 3=All-rounder): ");
     scanf("%d", &roleCodeInput);
-    
-    clearInputBuffer(); 
+
+    clearInputBuffer();
 
     if (roleCodeInput < 1 || roleCodeInput > 3)
     {
@@ -478,17 +482,11 @@ void showPlayersByRoleAcrossTeams()
         PlayerNode *roleHead = NULL;
 
         if (roleCodeInput == 1)
-        {
             roleHead = teamArray[teamIndex].batsmanHead;
-        }
         else if (roleCodeInput == 2)
-        {
             roleHead = teamArray[teamIndex].bowlerHead;
-        }
         else
-        {
             roleHead = teamArray[teamIndex].allRounderHead;
-        }
 
         if (roleHead != NULL)
         {
@@ -525,6 +523,33 @@ void showPlayersByRoleAcrossTeams()
     }
 }
 
+
+void freePlayerList(PlayerNode *head)
+{
+    PlayerNode *temp;
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+void freeAllTeams()
+{
+    for (int i = 0; i < totalTeams; i++)
+    {
+        freePlayerList(teamArray[i].batsmanHead);
+        freePlayerList(teamArray[i].bowlerHead);
+        freePlayerList(teamArray[i].allRounderHead);
+
+        teamArray[i].batsmanHead = NULL;
+        teamArray[i].bowlerHead = NULL;
+        teamArray[i].allRounderHead = NULL;
+    }
+}
+
+
 int main()
 {
     extern int playerCount;
@@ -550,12 +575,12 @@ int main()
         if (scanf("%d", &menuChoice) != 1)
         {
             printf("Invalid input. Please enter a number.\n");
-            clearInputBuffer(); 
+            clearInputBuffer();
             menuChoice = 0;
             continue;
         }
-        
-        clearInputBuffer(); 
+
+        clearInputBuffer();
 
         switch (menuChoice)
         {
@@ -571,21 +596,20 @@ int main()
 
             printf("Enter Team Name: ");
             fgets(teamNameInput, MAX_NAME, stdin);
-            teamNameInput[strcspn(teamNameInput, "\r\n")] = 0; 
-
+            teamNameInput[strcspn(teamNameInput, "\r\n")] = 0;
 
             printf("Enter Role (1=Batsman, 2=Bowler, 3=All-rounder): ");
             scanf("%d", &roleCodeInput);
-            clearInputBuffer(); 
+            clearInputBuffer();
 
             printf("Enter K: ");
             scanf("%d", &topCount);
-            clearInputBuffer(); 
+            clearInputBuffer();
 
             int teamIndex = findTeamIndex(teamNameInput);
             if (teamIndex == -1)
             {
-                printf("Team not found! (Note: Search is case-sensitive, e.g., 'Sri Lanka')\n");
+                printf("Team not found! (Case-sensitive)\n");
                 break;
             }
 
@@ -617,7 +641,8 @@ int main()
             break;
 
         case 5:
-            printf("Exiting\n");
+            printf("Exiting...\n");
+            freeAllTeams();   
             break;
 
         default:
