@@ -185,6 +185,33 @@ void put(LRUCache *cache, int key, char *val)
     cache->size++;
 }
 
+void freeCache(LRUCache *cache)
+{
+    if (!cache)
+        return;
+
+    Node *cur = cache->head;
+    while (cur)
+    {
+        Node *tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+
+    for (int i = 0; i < MAP_SIZE; i++)
+    {
+        MapEntry *entry = cache->map[i];
+        while (entry)
+        {
+            MapEntry *tmp = entry;
+            entry = entry->next;
+            free(tmp);
+        }
+    }
+
+    free(cache);
+}
+
 int main()
 {
     LRUCache *cache = NULL;
@@ -202,6 +229,7 @@ int main()
         }
         else if (!strcmp(cmd, "put"))
         {
+            if (!cache) { printf("Cache not created\n"); continue; }
             int key;
             char val[100];
             scanf("%d %s", &key, val);
@@ -209,6 +237,7 @@ int main()
         }
         else if (!strcmp(cmd, "get"))
         {
+            if (!cache) { printf("Cache not created\n"); continue; }
             int key;
             scanf("%d", &key);
             char *result = get(cache, key);
@@ -219,6 +248,7 @@ int main()
         }
         else if (!strcmp(cmd, "exit"))
         {
+            freeCache(cache);
             break;
         }
     }
